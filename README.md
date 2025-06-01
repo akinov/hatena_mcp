@@ -29,13 +29,12 @@ To use the Hatena Bookmark API, you need a Consumer Key and Consumer Secret.
     Register your application with Hatena Developer Center to get your OAuth Consumer Key and Consumer Secret. You can typically find information on how to do this at the [Hatena Developer Center](https://developer.hatena.ne.jp/ja/documents/auth/apis/oauth/consumer) (Note: Link might vary, please check the official Hatena documentation).
 
 2.  **Set API Keys:**
-    Currently, the Consumer Key and Consumer Secret are stored as constants directly in the `src/hatenaAuth.ts` file:
-    ```typescript
-    // In src/hatenaAuth.ts
-    const CONSUMER_KEY = 'CjrFt8E/8G8otw=='; // Replace with your actual Consumer Key
-    const CONSUMER_SECRET = 'lhNFFK+sI/nei/yatXMxnObciI8='; // Replace with your actual Consumer Secret
+    You will need to edit the `src/hatenaAuth.ts` file to set your API keys. Inside this file, find the following lines:
     ```
-    Replace the placeholder values with the actual keys you obtained. The current values are the test ones provided.
+    const CONSUMER_KEY = 'YOUR_CONSUMER_KEY';
+    const CONSUMER_SECRET = 'YOUR_CONSUMER_SECRET';
+    ```
+    Replace the placeholder strings `'YOUR_CONSUMER_KEY'` and `'YOUR_CONSUMER_SECRET'` with your actual Consumer Key and Consumer Secret obtained from Hatena. The values currently in the file are non-functional test placeholders.
 
     **Important:** For production environments, it is strongly recommended to use environment variables or a secure configuration management system to handle these sensitive credentials instead of hardcoding them.
 
