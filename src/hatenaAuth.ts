@@ -1,9 +1,11 @@
 import OAuth from 'oauth-1.0a';
 import crypto from 'crypto';
 
+// IMPORTANT: Replace these placeholder values with your actual Hatena API Consumer Key and Secret.
+// You can obtain these from the Hatena Developer Center.
 // TODO: Store these securely, e.g., as environment variables
-const CONSUMER_KEY = 'CjrFt8E/8G8otw==';
-const CONSUMER_SECRET = 'lhNFFK+sI/nei/yatXMxnObciI8=';
+const CONSUMER_KEY = "YOUR_CONSUMER_KEY_HERE";
+const CONSUMER_SECRET = "YOUR_CONSUMER_SECRET_HERE";
 
 const oauth = new OAuth({
   consumer: {
