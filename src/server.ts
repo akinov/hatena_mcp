@@ -3,6 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { getOAuthHeaders } from "./hatenaAuth"; // Assuming this path is correct
 import https from 'https'; // For making API requests
+import { OutgoingHttpHeaders } from 'http'; // Import OutgoingHttpHeaders
 // If axios was installed, could use: import axios from 'axios';
 
 // Define the structure of a bookmark from Hatena API for type safety
@@ -46,7 +47,7 @@ server.tool(
     offset: z.number().optional().default(0).describe("Search result offset."),
     limit: z.number().optional().default(20).describe("Search result limit (max 100)."),
   },
-  async ({ query, offset, limit }) => {
+  async ({ query, offset, limit }: { query: string; offset: number; limit: number }) => {
     const apiUrl = "https://b.hatena.ne.jp/my/search/json";
     const method = "GET";
 
@@ -65,7 +66,7 @@ server.tool(
     try {
       // Using built-in https module. Replace with axios if preferred and installed.
       const responseText = await new Promise<string>((resolve, reject) => {
-        const req = https.get(requestUrl, { headers: oauthHeaders }, (res) => {
+        const req = https.get(requestUrl, { headers: oauthHeaders as unknown as OutgoingHttpHeaders }, (res) => { // Cast to unknown then OutgoingHttpHeaders
           let data = "";
           res.on("data", (chunk) => (data += chunk));
           res.on("end", () => {
@@ -91,9 +92,8 @@ server.tool(
       }
 
       // Transform Hatena API response to MCP tool result format
-      const results = responseData.bookmarks.map(bookmark => ({
-        type: "json", // Or could be a custom structured type if MCP supports it well
-        data: {
+      const bookmarkContents = responseData.bookmarks.map(bookmark => {
+        const bookmarkData = {
           title: bookmark.entry.title,
           url: bookmark.entry.url,
           comment: bookmark.comment,
@@ -102,20 +102,22 @@ server.tool(
           timestamp: new Date(bookmark.timestamp * 1000).toISOString(),
           is_private: bookmark.is_private === 1,
           eid: bookmark.entry.eid
-        }
-      }));
+        };
+        // Return as text content with stringified JSON
+        return { type: "text" as const, text: JSON.stringify(bookmarkData) };
+      });
 
       return {
         content: [
-            { type: "text", text: `Found ${responseData.meta.total} bookmarks. Showing ${responseData.bookmarks.length}.` },
-            ...results.map(r => ({ type: "json", json: r.data })) // Representing each bookmark as JSON content
+            { type: "text" as const, text: `Found ${responseData.meta.total} bookmarks. Showing ${responseData.bookmarks.length}.` },
+            ...bookmarkContents
         ]
       };
 
     } catch (error: any) {
       console.error("Error calling Hatena API:", error);
       return {
-        content: [{ type: "text", text: `Error searching Hatena Bookmarks: ${error.message}` }],
+        content: [{ type: "text" as const, text: `Error searching Hatena Bookmarks: ${error.message}` }],
         isError: true,
       };
     }
@@ -126,7 +128,7 @@ server.tool(
 server.resource(
   "info",
   "info://hatena-search",
-  async (uri) => ({
+  async (uri: URL) => ({ // Explicitly type uri
     contents: [{
       uri: uri.href,
       text: "This MCP server allows searching your Hatena Bookmarks."

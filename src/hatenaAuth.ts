@@ -36,7 +36,7 @@ export function getOAuthHeaders(
   url: string,
   method: string,
   token?: Token
-): Record<string, string> {
+): OAuth.Header {
   const oauthData = oauth.authorize({ url, method, data: {} }, token);
   return oauth.toHeader(oauthData);
 }

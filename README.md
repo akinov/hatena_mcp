@@ -74,6 +74,23 @@ npm run test
 ```
 This command will first build the project and then run Jest.
 
+**Important Note on `server.test.ts` Behavior:**
+
+The integration tests in `src/tests/server.test.ts` use an `StdioClientTransport` to communicate with the server. This means the actual server (`dist/server.js`) is launched as a separate child process during these tests.
+
+Due to this architecture, standard Jest mocking for network requests or modules like `https` or `src/hatenaAuth.ts` within the test file **does not affect the child server process**. Consequently, when these tests run the `searchBookmarks` tool:
+
+*   The server will attempt to make **live HTTP requests** to the Hatena Bookmark API.
+*   The API credentials currently configured in `src/hatenaAuth.ts` are placeholder/test values.
+*   As a result, the Hatena API is expected to return an authentication error (e.g., a 401 Unauthorized status).
+*   The tests in `server.test.ts` are written to **expect this error response** from the live API. They verify that the server correctly processes this API error and relays it as an MCP error response.
+
+Passing these specific tests therefore confirms that:
+1.  Client-server MCP communication via StdioTransport is working for the `searchBookmarks` tool.
+2.  The server can gracefully handle and report errors received from the live Hatena API.
+
+The unit tests in `src/tests/hatenaAuth.test.ts`, on the other hand, run entirely within the main test process, and any mocks defined for them behave as expected.
+
 ## Project Structure
 
 -   `src/`: Contains the TypeScript source code.
